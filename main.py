@@ -1,4 +1,5 @@
 import pyshark
+import matplotlib.pyplot as plt
 
 
 class PacketInfo:
@@ -9,9 +10,6 @@ class PacketInfo:
 
     def __str__(self):
         return "% s % s % s" % (self.stream, self.length, self.time_relative)
-        # return "stream: % s,\n" \
-        #        "length: % s,\n" \
-        #        "time:   % s\n" % (self.stream, self.length, self.time_relative)
 
 
 if __name__ == '__main__':
@@ -35,18 +33,16 @@ if __name__ == '__main__':
     print(max_stream)
 
     for stream_packets in packet_storage:
+        times = []
+        lengths = []
+        stream = stream_packets[0].stream
         for packet in stream_packets:
-            print(packet)
-
-    # curr_stream = 0
-    # while curr_stream <= max_stream:
-    #     for packet in pcap:
-    #         if int(packet.tcp.stream) == curr_stream:
-    #             print(packet.tcp.stream, packet.tcp.len, packet.tcp.time_relative)
-    #     curr_stream += 1
-
-    # print(dir(packet.tcp))
-    # print(packet.tcp)
-
-    # for packet in pcap:
-    #     print(packet.tcp.stream, packet.tcp.len, packet.tcp.time_relative)
+            times.append(float(packet.time_relative))
+            lengths.append(packet.length)
+        plt.subplot(max_stream // 2 + 1, 2, stream + 1)
+        plt.plot(times, lengths)
+        plt.title(stream)
+        plt.xlabel('time')
+        plt.ylabel('length')
+        plt.xticks(rotation=45)
+    plt.show()
