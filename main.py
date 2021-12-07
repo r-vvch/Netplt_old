@@ -13,7 +13,7 @@ class PacketInfo:
 
 
 if __name__ == '__main__':
-    pcap = pyshark.FileCapture('/home/roman/My/SSL_try/capture_480_10min_tcp_100_frames.pcap', display_filter="tcp")
+    pcap = pyshark.FileCapture('/home/roman/My/SSL_try/capture_480_10min_tcp.pcap', display_filter="tcp")
 
     packet_storage = []
 
@@ -32,6 +32,7 @@ if __name__ == '__main__':
 
     print(max_stream)
 
+    plt.rcParams["figure.figsize"] = (12, 92)
     for stream_packets in packet_storage:
         times = []
         lengths = []
@@ -39,10 +40,11 @@ if __name__ == '__main__':
         for packet in stream_packets:
             times.append(float(packet.time_relative))
             lengths.append(packet.length)
-        plt.subplot(max_stream // 2 + 1, 2, stream + 1)
+        plt.subplot(max_stream // 3 + 1, 3, stream + 1)
         plt.plot(times, lengths)
         plt.title(stream)
         plt.xlabel('time')
         plt.ylabel('length')
         plt.xticks(rotation=45)
+    plt.tight_layout()
     plt.show()
