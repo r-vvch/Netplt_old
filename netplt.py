@@ -1,3 +1,4 @@
+import argparse
 import math
 import pyshark
 import matplotlib.pyplot as plt
@@ -15,7 +16,12 @@ class PacketInfo:
 
 
 if __name__ == '__main__':
-    pcap = pyshark.FileCapture('/home/roman/My/SSL_try/capture_480_10min_tcp_100_frames.pcap', display_filter="tcp")
+    parser = argparse.ArgumentParser(description='Build graphs for TCP steams')
+    parser.add_argument('pcap_file_name', type=str, help='Path to input pcap file')
+    parser.add_argument('--save', '-s', action='store_false', help='Save graphs')
+    args = parser.parse_args()
+
+    pcap = pyshark.FileCapture(args.pcap_file_name, display_filter="tcp")
 
     packet_storage = []
 
@@ -50,4 +56,4 @@ if __name__ == '__main__':
     now = datetime.now()
     now.replace(microsecond=0)
     plt.savefig('streams_graph_' + now.isoformat(sep='_', timespec='seconds') + '.png')
-    plt.show()
+    # plt.show()
