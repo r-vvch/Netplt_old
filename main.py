@@ -1,5 +1,7 @@
+import math
 import pyshark
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 
 class PacketInfo:
@@ -13,7 +15,7 @@ class PacketInfo:
 
 
 if __name__ == '__main__':
-    pcap = pyshark.FileCapture('/home/roman/My/SSL_try/capture_480_10min_tcp.pcap', display_filter="tcp")
+    pcap = pyshark.FileCapture('/home/roman/My/SSL_try/capture_480_10min_tcp_100_frames.pcap', display_filter="tcp")
 
     packet_storage = []
 
@@ -30,9 +32,7 @@ if __name__ == '__main__':
                 packet_storage.append([])
             packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet.tcp.time_relative))
 
-    print(max_stream)
-
-    plt.rcParams["figure.figsize"] = (12, 92)
+    plt.rcParams["figure.figsize"] = (9, math.ceil(max_stream / 3) * 3)
     for stream_packets in packet_storage:
         times = []
         lengths = []
@@ -47,4 +47,7 @@ if __name__ == '__main__':
         plt.ylabel('length')
         plt.xticks(rotation=45)
     plt.tight_layout()
+    now = datetime.now()
+    now.replace(microsecond=0)
+    plt.savefig('streams_graph_' + now.isoformat(sep='_', timespec='seconds') + '.png')
     plt.show()
