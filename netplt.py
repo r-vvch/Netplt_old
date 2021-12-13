@@ -7,9 +7,9 @@ from datetime import datetime
 
 class PacketInfo:
     def __init__(self, stream, length, time_relative):
-        self.stream = stream
-        self.length = length
-        self.time_relative = time_relative
+        self.stream = int(stream)
+        self.length = float(length)
+        self.time_relative = float(time_relative)
 
     def __str__(self):
         return "% s % s % s" % (self.stream, self.length, self.time_relative)
