@@ -54,31 +54,12 @@ if __name__ == '__main__':
             lengths.append(interval_length)
             current_time += time_unit
         plt.subplot(max_stream // 3 + 1, 3, stream + 1)
-        plt.plot(times, lengths, '.')
+        # plt.plot(times, lengths, '.')
+        times.append(max_time)
+        plt.stairs(lengths, times, fill=True)
         plt.title(stream)
         plt.xlabel('time')
         plt.ylabel('length')
 
     plt.tight_layout()
     plt.show()
-
-    #
-    #     times = []
-    #     lengths = []
-    #     stream = stream_packets[0].stream
-    #     for packet in stream_packets:
-    #         times.append(float(packet.time_relative))
-    #         lengths.append(packet.length)
-    #     plt.subplot(max_stream // 3 + 1, 3, stream + 1)
-    #     # plt.plot(times, lengths)
-    #     print(len(times))
-    #     plt.hist(times, )
-    #     plt.title(stream)
-    #     plt.xlabel('time')
-    #     plt.ylabel('length')
-    #     # plt.xticks(rotation=45)
-    # plt.tight_layout()
-    # now = datetime.now()
-    # now.replace(microsecond=0)
-    # # plt.savefig('streams_graph_' + now.isoformat(sep='_', timespec='seconds') + '.png')
-    # plt.show()
