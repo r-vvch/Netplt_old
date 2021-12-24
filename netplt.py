@@ -19,12 +19,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Build graphs for TCP steams')
     parser.add_argument('pcap_file_name', type=str, help='Path to input pcap file')
     parser.add_argument('num_intervals', nargs='?', type=int, default=10, help='Number of intervals on graphs')
-    parser.add_argument('--save', '-s', action='store_false', help='Save graphs')
+    parser.add_argument('--save', '-s', action='store_true', help='Save graphs')
     args = parser.parse_args()
 
     pcap = pyshark.FileCapture(args.pcap_file_name, display_filter="tcp")
     num_intervals = args.num_intervals
-
+    save = args.save
     packet_storage = []
 
     max_stream = 0
@@ -60,7 +60,6 @@ if __name__ == '__main__':
             lengths.append(interval_length)
             current_time += time_unit
         plt.subplot(max_stream // 3 + 1, 3, stream + 1)
-        # plt.plot(times, lengths, '.')
         times.append(max_time)
         plt.stairs(lengths, times, fill=True)
         plt.title(stream)
@@ -69,6 +68,9 @@ if __name__ == '__main__':
 
     plt.tight_layout()
 
-    now = datetime.now()
-    now.replace(microsecond=0)
-    plt.savefig('streams_graph_' + now.isoformat(sep='_', timespec='seconds') + '.png')
+    if save:
+        now = datetime.now()
+        now.replace(microsecond=0)
+        plt.savefig('streams_graph_' + now.isoformat(sep='_', timespec='seconds') + '.png')
+    else:
+        plt.show()
