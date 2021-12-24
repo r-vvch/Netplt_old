@@ -25,7 +25,7 @@ if __name__ == '__main__':
     pcap = pyshark.FileCapture(args.pcap_file_name, display_filter="tcp")
     num_intervals = args.num_intervals
     save = args.save
-    packet_storage = []
+    packet_storage = {}
 
     max_stream = 0
     max_time = 0
@@ -37,19 +37,16 @@ if __name__ == '__main__':
             max_time = float(packet.tcp.time_relative)
         try:
             packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet.tcp.time_relative))
-        except IndexError:
-            packet_storage.append([])
-            while len(packet_storage) < stream_num + 1:
-                packet_storage.append([])
+        except KeyError:
+            packet_storage[stream_num] = []
             packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet.tcp.time_relative))
 
     time_unit = max_time / num_intervals
     plt.rcParams["figure.figsize"] = (9, math.ceil(max_stream / 3) * 3)
 
-    for stream_packets in packet_storage:
+    for stream, stream_packets in packet_storage.items():
         times = []
         lengths = []
-        stream = stream_packets[0].stream
         current_time = 0
         while current_time < max_time:
             interval_length = 0
