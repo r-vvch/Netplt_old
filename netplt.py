@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     time_unit = max_time / num_intervals
     if selected_streams_str == 'all':
-        plt.rcParams["figure.figsize"] = (9, math.ceil(max_stream / 3) * 3)
+        plt.rcParams["figure.figsize"] = (9, math.ceil((max_stream + 1) / 3) * 3)
     else:
         plt.rcParams["figure.figsize"] = (9, math.ceil(len(selected_streams) / 3) * 3)
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
             lengths.append(interval_length)
             current_time += time_unit
         if selected_streams_str == 'all':
-            plt.subplot(math.ceil(max_stream / 3), 3, stream + 1)
+            plt.subplot(math.ceil((max_stream + 1) / 3), 3, stream + 1)
         else:
             plt.subplot(math.ceil(len(selected_streams) / 3), 3, pos)
         times.append(max_time)
