@@ -20,7 +20,7 @@ if __name__ == '__main__':
     parser.add_argument('pcap_file_name', type=str, help='Path to input pcap file')
     parser.add_argument('streams', nargs='?', type=str, default='all', help='Streams to be plotted, space-separated')
     parser.add_argument('num_intervals', nargs='?', type=int, default=10, help='Number of intervals on graphs')
-    parser.add_argument('--save', '-s', action='store_false', help='Save graphs')
+    parser.add_argument('--save', '-s', action='store_true', help='Save graphs')
     args = parser.parse_args()
 
     pcap = pyshark.FileCapture(args.pcap_file_name, display_filter="tcp")
@@ -31,7 +31,9 @@ if __name__ == '__main__':
     if selected_streams_str != 'all':
         selected_streams = sorted([int(x) for x in selected_streams_str.split()])
 
-    packet_storage = []
+    save = args.save
+
+    packet_storage = {}
 
     max_stream = 0
     max_time = 0
@@ -44,10 +46,8 @@ if __name__ == '__main__':
         if selected_streams_str == 'all' or stream_num in selected_streams:
             try:
                 packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet.tcp.time_relative))
-            except IndexError:
-                packet_storage.append([])
-                while len(packet_storage) < stream_num + 1:
-                    packet_storage.append([])
+            except KeyError:
+                packet_storage[stream_num] = []
                 packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet.tcp.time_relative))
 
     time_unit = max_time / num_intervals
@@ -56,34 +56,34 @@ if __name__ == '__main__':
     else:
         plt.rcParams["figure.figsize"] = (9, math.ceil(len(selected_streams) / 3) * 3)
 
-    pos = 1
-    for stream_packets in packet_storage:
-        if len(stream_packets) != 0:
-            times = []
-            lengths = []
-            stream = stream_packets[0].stream
-            current_time = 0
-            while current_time < max_time:
-                interval_length = 0
-                for packet in stream_packets:
-                    if current_time < packet.time_relative < current_time + time_unit:
-                        interval_length += packet.length
-                times.append(current_time)
-                lengths.append(interval_length)
-                current_time += time_unit
-            if selected_streams_str == 'all':
-                plt.subplot(math.ceil(max_stream / 3), 3, stream + 1)
-            else:
-                plt.subplot(math.ceil(len(selected_streams) / 3), 3, pos)
-            times.append(max_time)
-            plt.stairs(lengths, times, fill=True)
-            plt.title(stream)
-            plt.xlabel('time')
-            plt.ylabel('length')
-            pos += 1
+    for stream, stream_packets in packet_storage.items():
+        times = []
+        lengths = []
+        current_time = 0
+        while current_time < max_time:
+            interval_length = 0
+            for packet in stream_packets:
+                if current_time < packet.time_relative < current_time + time_unit:
+                    interval_length += packet.length
+            times.append(current_time)
+            lengths.append(interval_length)
+            current_time += time_unit
+        # if selected_streams_str == 'all':
+        #     plt.subplot(math.ceil(max_stream / 3), 3, stream + 1)
+        # else:
+        #     plt.subplot(math.ceil(len(selected_streams) / 3), 3, pos)
+        plt.subplot(max_stream // 3 + 1, 3, stream + 1)
+        times.append(max_time)
+        plt.stairs(lengths, times, fill=True)
+        plt.title(stream)
+        plt.xlabel('time')
+        plt.ylabel('length')
 
     plt.tight_layout()
 
-    now = datetime.now()
-    now.replace(microsecond=0)
-    plt.savefig('streams_graph_' + now.isoformat(sep='_', timespec='seconds') + '.png')
+    if save:
+        now = datetime.now()
+        now.replace(microsecond=0)
+        plt.savefig('streams_graph_' + now.isoformat(sep='_', timespec='seconds') + '.png')
+    else:
+        plt.show()
