@@ -1,4 +1,3 @@
-import argparse
 import math
 import pyshark
 import matplotlib.pyplot as plt
@@ -16,18 +15,11 @@ class PacketInfo:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Build graphs for TCP steams')
-    parser.add_argument('pcap_file_name', type=str, help='Path to input pcap file')
-    parser.add_argument('streams', nargs='?', type=str, default='all', help='Streams to be plotted, space-separated')
-    parser.add_argument('num_intervals', nargs='?', type=int, default=10, help='Number of intervals on graphs')
-    parser.add_argument('--save', '-s', action='store_false', help='Save graphs')
-    args = parser.parse_args()
-
-    pcap = pyshark.FileCapture(args.pcap_file_name, display_filter="tcp")
-    num_intervals = args.num_intervals
-
+    pcap_file_name = "/home/roman/My/YouTube_TCP/test.pcap"
+    pcap = pyshark.FileCapture(pcap_file_name, display_filter="tcp")
+    num_intervals = 10
     selected_streams = []
-    selected_streams_str = args.streams
+    selected_streams_str = '0 3 7 1 8'
     if selected_streams_str != 'all':
         selected_streams = sorted([int(x) for x in selected_streams_str.split()])
 
@@ -83,7 +75,4 @@ if __name__ == '__main__':
             pos += 1
 
     plt.tight_layout()
-
-    now = datetime.now()
-    now.replace(microsecond=0)
-    plt.savefig('streams_graph_' + now.isoformat(sep='_', timespec='seconds') + '.png')
+    plt.show()
