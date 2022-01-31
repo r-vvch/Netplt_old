@@ -37,6 +37,10 @@ if __name__ == '__main__':
 
     max_stream = 0
     max_time = 0
+    min_time = float(pcap[0].sniff_timestamp)
+    for packet in pcap:
+        if float(packet.sniff_timestamp) < min_time:
+            min_time = packet.sniff_timestamp
     for packet in pcap:
         stream_num = int(packet.tcp.stream)
         if stream_num > max_stream:
@@ -45,10 +49,12 @@ if __name__ == '__main__':
             max_time = float(packet.tcp.time_relative)
         if selected_streams_str == 'all' or stream_num in selected_streams:
             try:
-                packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet.tcp.time_relative))
+                packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len,
+                                                             float(packet.sniff_timestamp) - min_time))
             except KeyError:
                 packet_storage[stream_num] = []
-                packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet.tcp.time_relative))
+                packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len,
+                                                             float(packet.sniff_timestamp) - min_time))
 
     time_unit = max_time / num_intervals
     if selected_streams_str == 'all':
