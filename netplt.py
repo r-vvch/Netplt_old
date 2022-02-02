@@ -42,22 +42,23 @@ if __name__ == '__main__':
         if float(packet.sniff_timestamp) < min_time:
             min_time = packet.sniff_timestamp
     for packet in pcap:
+        packet_time = float(packet.sniff_timestamp) - min_time
         stream_num = int(packet.tcp.stream)
         if stream_num > max_stream:
             max_stream = stream_num
-        if float(packet.tcp.time_relative) > max_time:
-            max_time = float(packet.tcp.time_relative)
+        if packet_time > max_time:
+            max_time = packet_time
         if selected_streams_str == 'all' or stream_num in selected_streams:
             try:
-                packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len,
-                                                             float(packet.sniff_timestamp) - min_time))
+                packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet_time))
             except KeyError:
                 packet_storage[stream_num] = []
-                packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len,
-                                                             float(packet.sniff_timestamp) - min_time))
+                packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet_time))
 
     time_unit = max_time / num_intervals
-    if selected_streams_str == 'all':
+    if len(packet_storage) == 1:
+        plt.rcParams["figure.figsize"] = (3, 3)
+    elif selected_streams_str == 'all':
         plt.rcParams["figure.figsize"] = (9, math.ceil((max_stream + 1) / 3) * 3)
     else:
         plt.rcParams["figure.figsize"] = (9, math.ceil(len(selected_streams) / 3) * 3)
@@ -75,10 +76,11 @@ if __name__ == '__main__':
             times.append(current_time)
             lengths.append(interval_length)
             current_time += time_unit
-        if selected_streams_str == 'all':
-            plt.subplot(math.ceil((max_stream + 1) / 3), 3, stream + 1)
-        else:
-            plt.subplot(math.ceil(len(selected_streams) / 3), 3, pos)
+        if len(packet_storage) > 1:
+            if selected_streams_str == 'all':
+                plt.subplot(math.ceil((max_stream + 1) / 3), 3, stream + 1)
+            else:
+                plt.subplot(math.ceil(len(selected_streams) / 3), 3, pos)
         times.append(max_time)
         plt.stairs(lengths, times, fill=True)
         plt.title(stream)
