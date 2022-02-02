@@ -58,6 +58,8 @@ if __name__ == '__main__':
     time_unit = max_time / num_intervals
     if len(packet_storage) == 1:
         plt.rcParams["figure.figsize"] = (3, 3)
+    elif len(packet_storage) == 2:
+        plt.rcParams["figure.figsize"] = (6, 3)
     elif selected_streams_str == 'all':
         plt.rcParams["figure.figsize"] = (9, math.ceil((max_stream + 1) / 3) * 3)
     else:
@@ -76,7 +78,9 @@ if __name__ == '__main__':
             times.append(current_time)
             lengths.append(interval_length)
             current_time += time_unit
-        if len(packet_storage) > 1:
+        if len(packet_storage) == 2:
+            plt.subplot(1, 2, pos)
+        elif len(packet_storage) > 2:
             if selected_streams_str == 'all':
                 plt.subplot(math.ceil((max_stream + 1) / 3), 3, stream + 1)
             else:
