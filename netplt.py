@@ -3,6 +3,7 @@ import math
 import pyshark
 import matplotlib.pyplot as plt
 from datetime import datetime
+import os
 
 
 class PacketInfo:
@@ -15,23 +16,13 @@ class PacketInfo:
         return "% s % s % s" % (self.stream, self.length, self.time_relative)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Build graphs for TCP steams')
-    parser.add_argument('pcap_file_name', type=str, help='Path to input pcap file')
-    parser.add_argument('streams', nargs='?', type=str, default='all', help='Streams to be plotted, space-separated')
-    parser.add_argument('num_intervals', nargs='?', type=int, default=10, help='Number of intervals on graphs')
-    parser.add_argument('--save', '-s', action='store_true', help='Save graphs')
-    args = parser.parse_args()
-
-    pcap = pyshark.FileCapture(args.pcap_file_name, display_filter="tcp")
-    num_intervals = args.num_intervals
+def file_plot(pcap_file_name, streams, num_intervals, save):
+    pcap = pyshark.FileCapture(pcap_file_name, display_filter="tcp")
 
     selected_streams = []
-    selected_streams_str = args.streams
+    selected_streams_str = streams
     if selected_streams_str != 'all':
         selected_streams = sorted([int(x) for x in selected_streams_str.split()])
-
-    save = args.save
 
     packet_storage = {}
 
@@ -97,6 +88,28 @@ if __name__ == '__main__':
     if save:
         now = datetime.now()
         now.replace(microsecond=0)
-        plt.savefig('streams_graph_' + now.isoformat(sep='_', timespec='seconds') + '.png')
+        x = pcap_file_name.split("/")
+        plt.savefig('streams_graph_' + x[len(x) - 1].split(".")[0] + '.png')
     else:
         plt.show()
+    plt.close()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Build graphs for TCP steams')
+    parser.add_argument('path', type=str, help='Path to pcap file or directory with pcap files')
+    parser.add_argument('streams', nargs='?', type=str, default='all', help='Streams to be plotted, space-separated')
+    parser.add_argument('num_intervals', nargs='?', type=int, default=10, help='Number of intervals on graphs')
+    parser.add_argument('--save', '-s', action='store_true', help='Save graphs')
+    args = parser.parse_args()
+
+    if os.path.isdir(args.path):
+        for file in os.listdir(args.path):
+            if os.path.splitext(file)[1] == ".pcap":
+                file_plot(args.path + '/' + file, args.streams, args.num_intervals, args.save)
+            else:
+                print(file + " is not .pcap file")
+    elif os.path.isfile(args.path):
+        file_plot(args.path, args.streams, args.num_intervals, args.save)
+    else:
+        print("Wrong input")
