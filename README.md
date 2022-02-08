@@ -19,4 +19,4 @@ optional arguments:
 usage example: netplt.py /home/roman/My/netplt_test/capture_360_10min_tcp.pcap "16 22" -s
 ```
  
-[Example of work](https://helicopter.intra.ispras.ru/vovchenko.ra/netplt/-/blob/master/streams_graph_capture_360_10min_tcp.pcap.png)
+[Example of work](https://helicopter.intra.ispras.ru/vovchenko.ra/netplt/-/blob/master/streams_graph_capture_360_10min_tcp.png)
