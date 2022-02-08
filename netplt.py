@@ -22,17 +22,18 @@ if __name__ == '__main__':
     parser.add_argument('path', type=str, help='Path to pcap file or directory with pcap files')
     parser.add_argument('streams', nargs='?', type=str, default='all', help='Streams to be plotted, space-separated')
     parser.add_argument('time_unit', nargs='?', type=int, default=1, help='Time unit on the plot')
-    parser.add_argument('-s', '--save', action='store_true', help='Save plots')
     args = parser.parse_args()
+
+    time_unit = args.time_unit
 
     if os.path.isdir(args.path):
         for file in os.listdir(args.path):
             if os.path.splitext(file)[1] == ".pcap":
                 if args.save:
-                    subprocess.run(["python3", "netplt.py", args.path + file, args.streams, str(args.num_intervals), "-s"])
+                    subprocess.run(["python3", "netplt.py", args.path + file, args.streams, str(time_unit), "-s"])
                 else:
-                    subprocess.run(["python3", "netplt.py", args.path + file, args.streams, str(args.num_intervals)])
-            else:
+                    subprocess.run(["python3", "netplt.py", args.path + file, args.streams, str(time_unit)])
+            elif not os.path.isdir(args.path + "/" + file):
                 print(file + " is not .pcap file")
 
     elif os.path.isfile(args.path):
@@ -43,8 +44,6 @@ if __name__ == '__main__':
         selected_streams_str = args.streams
         if selected_streams_str != 'all':
             selected_streams = sorted([int(x) for x in selected_streams_str.split()])
-
-        save = args.save
 
         packet_storage = {}
 
@@ -68,7 +67,6 @@ if __name__ == '__main__':
                     packet_storage[stream_num] = []
                     packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet_time))
 
-        time_unit = args.time_unit
         if len(packet_storage) == 1:
             plt.rcParams["figure.figsize"] = (3, 3)
         elif len(packet_storage) == 2:
@@ -110,13 +108,10 @@ if __name__ == '__main__':
 
         plt.tight_layout()
 
-        if save:
-            now = datetime.now()
-            now.replace(microsecond=0)
-            x = args.path.split("/")
-            plt.savefig('streams_graph_' + x[len(x) - 1].split(".")[0] + '.png')
-        else:
-            plt.show()
+        now = datetime.now()
+        now.replace(microsecond=0)
+        x = args.path.split("/")
+        plt.savefig('streams_graph_' + x[len(x) - 1].split(".")[0] + '.png')
 
     else:
         print("Wrong input")
