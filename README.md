@@ -3,16 +3,20 @@
 TCP streams graphing tool
 
 ```
-usage: netplt.py [-h] [--save] pcap_file_name [streams] [num_intervals]
+usage: netplt.py [-h] [--save] path [streams] [num_intervals]
+
+Build graphs for TCP steams
 
 positional arguments:
-  pcap_file_name  Path to input pcap file
-  streams         Streams to be plotted, space-separated
-  num_intervals   Number of intervals on graphs
+  path           Path to pcap file or directory with pcap files
+  streams        Streams to be plotted, space-separated
+  num_intervals  Number of intervals on graphs
 
 optional arguments:
-  -h, --help      show this help message and exit
-  --save, -s      Save graphs
+  -h, --help     show this help message and exit
+  --save, -s     Save graphs
+
+usage example: netplt.py /home/roman/My/netplt_test/capture_360_10min_tcp.pcap "16 22" -s
 ```
  
-[Example of work](https://helicopter.intra.ispras.ru/vovchenko.ra/netplt/-/blob/master/streams_graph_2022-01-04_16:35:24.png)
+[Example of work](https://helicopter.intra.ispras.ru/vovchenko.ra/netplt/-/blob/master/streams_graph_capture_360_10min_tcp.pcap.png)
