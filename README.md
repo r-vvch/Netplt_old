@@ -2,6 +2,8 @@
 
 TCP streams graphing tool
 
+Required packages: tshark, matplotlib
+
 ```
 usage: netplt.py [-h] path [streams] [time_unit]
 
