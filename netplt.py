@@ -29,10 +29,7 @@ if __name__ == '__main__':
     if os.path.isdir(args.path):
         for file in os.listdir(args.path):
             if os.path.splitext(file)[1] == ".pcap":
-                if args.save:
-                    subprocess.run(["python3", "netplt.py", args.path + file, args.streams, str(time_unit), "-s"])
-                else:
-                    subprocess.run(["python3", "netplt.py", args.path + file, args.streams, str(time_unit)])
+                subprocess.run(["python3", "netplt.py", args.path + file, args.streams, str(time_unit)])
             elif not os.path.isdir(args.path + "/" + file):
                 print(file + " is not .pcap file")
 
