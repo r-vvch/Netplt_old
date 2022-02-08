@@ -21,8 +21,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Build graphs for TCP steams')
     parser.add_argument('path', type=str, help='Path to pcap file or directory with pcap files')
     parser.add_argument('streams', nargs='?', type=str, default='all', help='Streams to be plotted, space-separated')
-    parser.add_argument('num_intervals', nargs='?', type=int, default=10, help='Number of intervals on graphs')
-    parser.add_argument('--save', '-s', action='store_true', help='Save graphs')
+    parser.add_argument('time_unit', nargs='?', type=int, default=1, help='Time unit on the plot')
+    parser.add_argument('-s', '--save', action='store_true', help='Save plots')
     args = parser.parse_args()
 
     if os.path.isdir(args.path):
@@ -38,7 +38,6 @@ if __name__ == '__main__':
     elif os.path.isfile(args.path):
 
         pcap = pyshark.FileCapture(args.path, display_filter="tcp")
-        num_intervals = args.num_intervals
 
         selected_streams = []
         selected_streams_str = args.streams
@@ -69,7 +68,7 @@ if __name__ == '__main__':
                     packet_storage[stream_num] = []
                     packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet_time))
 
-        time_unit = max_time / num_intervals
+        time_unit = args.time_unit
         if len(packet_storage) == 1:
             plt.rcParams["figure.figsize"] = (3, 3)
         elif len(packet_storage) == 2:
@@ -103,7 +102,10 @@ if __name__ == '__main__':
             plt.stairs(lengths, times, fill=True)
             plt.title(stream)
             plt.xlabel('time')
-            plt.ylabel('length')
+            if time_unit == 1:
+                plt.ylabel('bits/sec')
+            else:
+                plt.ylabel('bits/' + str(time_unit) + 'sec')
             pos += 1
 
         plt.tight_layout()
