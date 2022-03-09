@@ -29,8 +29,8 @@ if __name__ == '__main__':
     if os.path.isdir(args.path):
         for file in os.listdir(args.path):
             if os.path.splitext(file)[1] == ".pcap":
-                subprocess.run(["python3", "netplt.py", args.path + file, args.streams, str(time_unit)])
-            elif not os.path.isdir(args.path + "/" + file):
+                subprocess.run(["python", "netplt.py", args.path + file, args.streams, str(time_unit)])
+            elif not os.path.isdir(args.path + "/" + file) or not os.path.isdir(args.path + "\\" + file):
                 print(file + " is not .pcap file")
 
     elif os.path.isfile(args.path):
@@ -107,7 +107,12 @@ if __name__ == '__main__':
 
         now = datetime.now()
         now.replace(microsecond=0)
-        x = args.path.split("/")
+        if "/" in args.path:
+            x = args.path.split("/")
+        elif "\\" in args.path:
+            x = args.path.split("\\")
+        else:
+            x = [args.path]
         plt.savefig('streams_graph_' + x[len(x) - 1].split(".")[0] + '.png')
 
     else:
