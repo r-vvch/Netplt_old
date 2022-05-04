@@ -20,6 +20,6 @@ optional arguments:
 ```
 Work examples:
 
-![grid](https://helicopter.intra.ispras.ru/vovchenko.ra/netplt/-/blob/master/streams_graph_grid_test.png)
+![grid](streams_graph_grid_test.png)
 
-![united](https://helicopter.intra.ispras.ru/vovchenko.ra/netplt/-/blob/master/streams_graph_united_test.png)
+![united](streams_graph_united_test.png)
