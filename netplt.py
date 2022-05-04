@@ -132,7 +132,7 @@ if __name__ == '__main__':
                 plt.stairs(lengths, times, fill=True, label=stream)
                 pos += 1
 
-            if len(selected_streams) < 22:
+            if (selected_streams_str == 'all' and max_stream < 22) or (0 < len(selected_streams) < 22):
                 lgd = plt.legend(bbox_to_anchor=(1, 1), loc='upper left')
             else:
                 lgd = plt.legend(ncol=math.ceil((max_stream + 1) / 21), bbox_to_anchor=(1, 1), loc='upper left')
