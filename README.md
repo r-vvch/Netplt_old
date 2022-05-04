@@ -18,6 +18,8 @@ positional arguments:
 optional arguments:
   -h, --help  show this help message and exit
 ```
-Work examples:  
-![grid](https://helicopter.intra.ispras.ru/vovchenko.ra/netplt/-/blob/master/streams_graph_grid_test.png)  
+Work examples:
+
+![grid](https://helicopter.intra.ispras.ru/vovchenko.ra/netplt/-/blob/master/streams_graph_grid_test.png)
+
 ![united](https://helicopter.intra.ispras.ru/vovchenko.ra/netplt/-/blob/master/streams_graph_united_test.png)
