@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('path', type=str, help='Path to pcap file or directory with pcap files')
     parser.add_argument('mode', nargs='?', type=str, default='grid', help='Graph type: grid or united plot')
     parser.add_argument('streams', nargs='?', type=str, default='all', help='Streams to be plotted, space-separated')
-    parser.add_argument('time_unit', nargs='?', type=int, default=1, help='Time unit on the plot')
+    parser.add_argument('time_unit', nargs='?', type=float, default=1.0, help='Time unit on the plot')
     args = parser.parse_args()
 
     time_unit = args.time_unit
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         packet_storage = {}
 
         max_stream = 0
-        max_time = 0
+        max_time = 0.0
         min_time = float(pcap[0].sniff_timestamp)
         for packet in pcap:
             if float(packet.sniff_timestamp) < min_time:
@@ -79,9 +79,9 @@ if __name__ == '__main__':
             for stream, stream_packets in packet_storage.items():
                 times = []
                 lengths = []
-                current_time = 0
+                current_time = 0.0
                 while current_time < max_time:
-                    interval_length = 0
+                    interval_length = 0.0
                     for packet in stream_packets:
                         if current_time < packet.time_relative < current_time + time_unit:
                             interval_length += packet.length
