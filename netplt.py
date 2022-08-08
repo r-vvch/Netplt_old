@@ -20,6 +20,7 @@ class PacketInfo:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Build graphs for TCP steams')
     parser.add_argument('path', type=str, help='Path to pcap file or directory with pcap files')
+    parser.add_argument('protocol', nargs='?', type=str, default='TCP', help='Protocol in interest')
     parser.add_argument('mode', nargs='?', type=str, default='grid', help='Graph type: grid or united plot')
     parser.add_argument('streams', nargs='?', type=str, default='all', help='Streams to be plotted, space-separated')
     parser.add_argument('time_unit', nargs='?', type=float, default=1.0, help='Time unit on the plot')
@@ -30,13 +31,24 @@ if __name__ == '__main__':
     if os.path.isdir(args.path):
         for file in os.listdir(args.path):
             if os.path.splitext(file)[1] == ".pcap":
-                subprocess.run(["python3", "netplt.py", args.path + file, args.mode, args.streams, str(time_unit)])
+                subprocess.run(["python3", "netplt.py",
+                                args.path + file, args.protocol, args.mode, args.streams, str(time_unit)])
             elif not os.path.isdir(args.path + "/" + file):
                 print(file + " is not .pcap file")
 
     elif os.path.isfile(args.path):
 
-        pcap = pyshark.FileCapture(args.path, display_filter="tcp")
+        protocol = args.protocol
+
+        if protocol == 'TCP' or protocol == 'tcp':
+            pcap = pyshark.FileCapture(args.path, display_filter="tcp")
+        elif protocol == 'QUIC' or protocol == 'quic':
+            pcap = pyshark.FileCapture(args.path, display_filter="quic")
+        elif protocol == 'UDP' or protocol == 'udp':
+            pcap = pyshark.FileCapture(args.path, display_filter="udp")
+        else:
+            print("Protocol not considered, using TCP")
+            pcap = pyshark.FileCapture(args.path, display_filter="tcp")
 
         selected_streams = []
         selected_streams_str = args.streams
@@ -53,27 +65,42 @@ if __name__ == '__main__':
                 min_time = packet.sniff_timestamp
         for packet in pcap:
             packet_time = float(packet.sniff_timestamp) - min_time
-            stream_num = int(packet.tcp.stream)
+            if protocol == 'TCP' or protocol == 'tcp':
+                stream_num = int(packet.tcp.stream)
+            elif protocol == 'QUIC' or protocol == 'quic' or protocol == 'UDP' or protocol == 'udp':
+                stream_num = int(packet.udp.stream)
+            else:
+                stream_num = int(packet.tcp.stream)
+
             if stream_num > max_stream:
                 max_stream = stream_num
             if packet_time > max_time:
                 max_time = packet_time
             if selected_streams_str == 'all' or stream_num in selected_streams:
-                try:
-                    packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet_time))
-                except KeyError:
+                if stream_num not in packet_storage.keys():
                     packet_storage[stream_num] = []
+                if protocol == 'TCP' or protocol == 'tcp':
+                    packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet_time))
+                elif protocol == 'QUIC' or protocol == 'quic' or protocol == 'UDP' or protocol == 'udp':
+                    packet_storage[stream_num].append(PacketInfo(stream_num, packet.udp.length, packet_time))
+                else:
                     packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet_time))
 
         if args.mode == "grid":
+
+            all_streams = []
+            for stream, stream_packets in packet_storage.items():
+                all_streams.append(stream)
+
             if len(packet_storage) == 1:
                 plt.rcParams["figure.figsize"] = (3, 3)
             elif len(packet_storage) == 2:
                 plt.rcParams["figure.figsize"] = (6, 3)
-            elif selected_streams_str == 'all':
-                plt.rcParams["figure.figsize"] = (9, math.ceil((max_stream + 1) / 3) * 3)
             else:
-                plt.rcParams["figure.figsize"] = (9, math.ceil(len(selected_streams) / 3) * 3)
+                plt.rcParams["figure.figsize"] = (9, math.ceil(len(all_streams) / 3) * 3)
+
+            x = args.path.split("/")
+            plt.title(x[len(x) - 1].split(".")[0])
 
             pos = 1
             for stream, stream_packets in packet_storage.items():
@@ -91,10 +118,8 @@ if __name__ == '__main__':
                 if len(packet_storage) == 2:
                     plt.subplot(1, 2, pos)
                 elif len(packet_storage) > 2:
-                    if selected_streams_str == 'all':
-                        plt.subplot(math.ceil((max_stream + 1) / 3), 3, stream + 1)
-                    else:
-                        plt.subplot(math.ceil(len(selected_streams) / 3), 3, pos)
+                    plt.subplot(math.ceil(len(all_streams) / 3), 3, pos)
+
                 times.append(max_time)
                 plt.stairs(lengths, times, fill=True)
                 plt.title(stream)
@@ -109,7 +134,7 @@ if __name__ == '__main__':
 
             now = datetime.now()
             now.replace(microsecond=0)
-            x = args.path.split("/")
+
             plt.savefig('streams_graph_grid_' + x[len(x) - 1].split(".")[0] + '.png')
 
         elif args.mode == "united":
@@ -150,7 +175,7 @@ if __name__ == '__main__':
                         bbox_inches='tight')
 
         else:
-            print("Wrong input")
+            print("Wrong input, specify mode")
 
     else:
-        print("Wrong input")
+        print("Wrong path")

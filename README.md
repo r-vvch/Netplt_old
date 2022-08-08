@@ -1,13 +1,13 @@
 # Netplt
 
-TCP streams graphing tool
+PACP streams graphing tool
 
 Required packages: tshark, matplotlib
 
 ```
 usage: netplt.py [-h] path [mode] [streams] [time_unit]
 
-Build graphs for TCP steams
+Build graphs for TCP, UDP and QUIC steams
 
 positional arguments:
   path        Path to pcap file or directory with pcap files
