@@ -18,9 +18,10 @@ class PacketInfo:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Build graphs for TCP steams')
+    parser = argparse.ArgumentParser(description='Build graphs for network streams')
     parser.add_argument('path', type=str, help='Path to pcap file or directory with pcap files')
-    parser.add_argument('protocol', nargs='?', type=str, default='TCP', help='Protocol in interest')
+    parser.add_argument('protocol', nargs='?', type=str, default='TCP',
+                        help='Protocol in interest: TCP, QUIC, UDP or \"any\" ')
     parser.add_argument('mode', nargs='?', type=str, default='grid', help='Graph type: grid or united plot')
     parser.add_argument('streams', nargs='?', type=str, default='all', help='Streams to be plotted, space-separated')
     parser.add_argument('time_unit', nargs='?', type=float, default=1.0, help='Time unit on the plot')
@@ -46,6 +47,12 @@ if __name__ == '__main__':
             pcap = pyshark.FileCapture(args.path, display_filter="quic")
         elif protocol == 'UDP' or protocol == 'udp':
             pcap = pyshark.FileCapture(args.path, display_filter="udp")
+        elif protocol == 'any':
+            if args.mode == 'united':
+                pcap = pyshark.FileCapture(args.path)
+            else:
+                print("Protocol option \"any\" can only be used with \"united\" plot mode")
+                exit()
         else:
             print("Protocol not considered, using TCP")
             pcap = pyshark.FileCapture(args.path, display_filter="tcp")
@@ -70,7 +77,12 @@ if __name__ == '__main__':
             elif protocol == 'QUIC' or protocol == 'quic' or protocol == 'UDP' or protocol == 'udp':
                 stream_num = int(packet.udp.stream)
             else:
-                stream_num = int(packet.tcp.stream)
+                if packet.transport_layer == 'UDP':
+                    stream_num = int(packet.udp.stream)
+                elif packet.transport_layer == 'TCP':
+                    stream_num = int(packet.tcp.stream)
+                else:
+                    stream_num = -1
 
             if stream_num > max_stream:
                 max_stream = stream_num
@@ -84,7 +96,7 @@ if __name__ == '__main__':
                 elif protocol == 'QUIC' or protocol == 'quic' or protocol == 'UDP' or protocol == 'udp':
                     packet_storage[stream_num].append(PacketInfo(stream_num, packet.udp.length, packet_time))
                 else:
-                    packet_storage[stream_num].append(PacketInfo(stream_num, packet.tcp.len, packet_time))
+                    packet_storage[stream_num].append(PacketInfo(stream_num, packet.length, packet_time))
 
         if args.mode == "grid":
 
@@ -154,7 +166,10 @@ if __name__ == '__main__':
                     lengths.append(interval_length)
                     current_time += time_unit
                 times.append(max_time)
-                plt.stairs(lengths, times, fill=True, label=stream)
+                if stream != -1:
+                    plt.stairs(lengths, times, fill=True, label=stream)
+                else:
+                    plt.stairs(lengths, times, fill=True, label="undefined")
                 pos += 1
 
             if (selected_streams_str == 'all' and max_stream < 22) or (0 < len(selected_streams) < 22):
